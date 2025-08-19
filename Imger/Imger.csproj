@@ -13,6 +13,7 @@
     <Title>Imger</Title>
     <Authors>Tsing Yi Studio</Authors>
     <Version>1.0.0-alpha.1</Version>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows|AnyCPU'">
@@ -32,7 +33,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Management" Version="9.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="icon.png" />
   </ItemGroup>
 
   <ItemGroup>
