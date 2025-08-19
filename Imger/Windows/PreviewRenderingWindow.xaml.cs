@@ -21,8 +21,6 @@ namespace Imger.Forms
         public PreviewRenderingWindow(string imageSource)
         {
             InitializeComponent();
-
-            // 绑定鼠标事件（放在 Host 上，便于空白处也能响应）
             Host.MouseWheel += OnMouseWheel;
             Host.MouseLeftButtonDown += OnMouseLeftButtonDown;
             Host.MouseLeftButtonUp += OnMouseLeftButtonUp;
@@ -33,7 +31,8 @@ namespace Imger.Forms
             if (File.Exists(imageSource))
             {
                 Img.Source = LoadBitmapHighQuality(imageSource);
-                // 窗口加载完成后自适应居中
+
+                // 关键：第一次布局完成后再自适应
                 Loaded += (_, __) => FitToView();
                 SizeChanged += (_, __) => { if (!_isPanning) FitToView(); };
             }
@@ -41,7 +40,7 @@ namespace Imger.Forms
             {
                 MessageBox.Show("The image was not found. Please modify the path.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 Close();
-            }            
+            }
         }
 
         // 高质量加载：一次性读取文件以避免文件锁，并保留 EXIF 方向
@@ -54,59 +53,66 @@ namespace Imger.Forms
             return src;
         }
 
-        // 将图片按窗口大小等比缩放并居中（不放大超过 1x，保证清晰）
+        // 将图片自适应窗口并居中
         private void FitToView()
         {
-            if (Img.Source == null || Host.ActualWidth <= 0 || Host.ActualHeight <= 0) return;
+            if (Img.Source == null || Host.ActualWidth <= 0 || Host.ActualHeight <= 0)
+                return;
 
-            double imgW = Img.Source.Width;
-            double imgH = Img.Source.Height;
-            double viewW = Host.ActualWidth;
-            double viewH = Host.ActualHeight;
+            double imgW = Img.Source.Width;  // 图片的宽度
+            double imgH = Img.Source.Height; // 图片的高度
+            double viewW = Host.ActualWidth; // 容器的宽度
+            double viewH = Host.ActualHeight; // 容器的高度
 
-            // 计算适配比例（不超过 1，避免无谓放大导致模糊；如需允许放大，可去掉 Math.Min 中的 1）
-            double scale = Math.Min(1.0, Math.Min(viewW / imgW, viewH / imgH));
+            // 计算适配比例，确保图片最大不超出容器
+            double scaleX = viewW / imgW;
+            double scaleY = viewH / imgH;
+
+            // 选择适应容器的最小缩放比例，避免图片过大导致超出容器
+            double scale = Math.Min(scaleX, scaleY);
+
+            // 限制缩放比例在设定范围内
             scale = Clamp(scale, MinScale, MaxScale);
 
-            // 使图像居中
+            // 计算居中偏移量
             double tx = (viewW - imgW * scale) / 2.0;
             double ty = (viewH - imgH * scale) / 2.0;
 
-            var m = Matrix.Identity;
-            m.ScaleAt(scale, scale, 0, 0);
-            m.Translate(tx, ty);
+            // 创建新的变换矩阵
+            Matrix m = Matrix.Identity;
+            m.ScaleAt(scale, scale, 0, 0);  // 缩放
+            m.Translate(tx, ty);            // 平移至居中
+
+            // 应用变换矩阵
             ViewTransform.Matrix = m;
         }
 
-        // 滚轮缩放（以光标为中心缩放）
+        // 修正滚轮缩放方向和确保图片不裁切
         private void OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (Img.Source == null)
-                return;
+            if (Img.Source == null) return;
 
-            // 缩放步进：Ctrl加速，Shift减速（可选）
-            double step = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl) ? 1.25 :
-                          (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift) ? 1.07 : 1.15);
-            double zoom = e.Delta > 0 ? step : 1.0 / step;
+            // 向上滚放大，向下滚缩小
+            double zoom = e.Delta > 0 ? 1.25 : 1.0 / 1.25;
 
-            // 当前矩阵
+            // Ctrl 键时步长更大
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+                zoom = e.Delta > 0 ? 2.0 : 0.5;
+
             Matrix m = ViewTransform.Matrix;
-
-            // 当前缩放（假设无倾斜）
             double currentScale = m.M11;
             double targetScale = Clamp(currentScale * zoom, MinScale, MaxScale);
 
-            // 若达到边界，按比例调整zoom，避免卡边
-            zoom = targetScale / currentScale;
-            if (Math.Abs(zoom - 1.0) < 1e-6)
-                return;
+            if (Math.Abs(targetScale - currentScale) < 1e-6) return;
 
-            // 获取光标相对Img的坐标（以该点为锚点ScaleAt）
-            Point cursor = e.GetPosition(Host);
-            m.ScaleAt(zoom, zoom, cursor.X, cursor.Y);
+            Point cursor = e.GetPosition(Host);   // 以鼠标位置为锚点缩放
+            m.ScaleAt(targetScale / currentScale,
+                       targetScale / currentScale,
+                       cursor.X, cursor.Y);
+
             ViewTransform.Matrix = m;
 
-            // 启用缓存，保持清晰
+            // 提高清晰度
             Img.CacheMode = new BitmapCache { RenderAtScale = targetScale };
         }
 
@@ -118,7 +124,6 @@ namespace Imger.Forms
             _isPanning = true;
             _lastMouse = e.GetPosition(Host);
             _startMatrix = ViewTransform.Matrix;
-
             Host.CaptureMouse();
             Mouse.OverrideCursor = Cursors.Hand;
         }
@@ -131,18 +136,21 @@ namespace Imger.Forms
             Point now = e.GetPosition(Host);
             Vector nowV = now - _lastMouse;
 
-            // 在屏幕坐标系平移（直接对矩阵追加 Translate）
+            // 在屏幕坐标系平移（直接对矩阵追加Translate）
             Matrix m = _startMatrix;
-            m.Translate(nowV.X,nowV.Y);
-            ViewTransform.Matrix = m;
+            m.Translate(nowV.X, nowV.Y);
+
+            ViewTransform.Matrix = m; // 应用平移
         }
 
         // 左键拖拽结束
         private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e) => EndPan();
 
+        // 结束拖拽
         private void EndPan()
         {
             if (!_isPanning) return;
+
             _isPanning = false;
             Host.ReleaseMouseCapture();
             Mouse.OverrideCursor = null;
@@ -151,6 +159,7 @@ namespace Imger.Forms
         // 重置视图（右键单击）
         private void ResetView() => FitToView();
 
+        // 限制缩放比例
         private static double Clamp(double v, double min, double max) => v < min ? min : (v > max ? max : v);
     }
 }

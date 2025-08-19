@@ -21,14 +21,9 @@
             <Grid>
                 <Image
                     x:Name="Img"
-                    CacheMode="{x:Null}"
                     RenderOptions.BitmapScalingMode="NearestNeighbor"
                     RenderOptions.EdgeMode="Unspecified"
-                    Stretch="None">
-                    <Image.LayoutTransform>
-                        <!--  不用 LayoutTransform，避免布局反复计算；这里占位但保持为空  -->
-                        <TransformGroup />
-                    </Image.LayoutTransform>
+                    Stretch="Uniform">
                     <Image.RenderTransform>
                         <MatrixTransform x:Name="ViewTransform" />
                     </Image.RenderTransform>
