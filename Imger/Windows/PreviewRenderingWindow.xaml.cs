@@ -5,7 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace Imger.Forms
+namespace Imger.Windows
 {
     /// <summary>
     /// PreviewRenderingWindow.xaml 的交互逻辑
