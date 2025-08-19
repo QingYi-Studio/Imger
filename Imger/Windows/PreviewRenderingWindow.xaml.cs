@@ -16,7 +16,7 @@ namespace Imger.Forms
         private bool _isPanning;             // 是否处于拖拽中
         private Matrix _startMatrix;         // 拖拽开始时的矩阵
         private const double MinScale = 0.05; // 最小缩放
-        private const double MaxScale = 5000.0; // 最大缩放
+        private const double MaxScale = 10000.0; // 最大缩放
 
         public PreviewRenderingWindow(string imageSource)
         {
