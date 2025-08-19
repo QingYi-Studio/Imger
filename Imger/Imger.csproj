@@ -12,4 +12,52 @@
     <Authors>Tsing Yi Studio</Authors>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Update="program\Real-ESRGAN\models\realesr-animevideov3-x2.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="program\Real-ESRGAN\models\realesr-animevideov3-x2.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="program\Real-ESRGAN\models\realesr-animevideov3-x3.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="program\Real-ESRGAN\models\realesr-animevideov3-x3.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="program\Real-ESRGAN\models\realesr-animevideov3-x4.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="program\Real-ESRGAN\models\realesr-animevideov3-x4.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="program\Real-ESRGAN\models\realesr-general-wdn-x4v3.pth">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="program\Real-ESRGAN\models\realesr-general-x4v3.pth">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="program\Real-ESRGAN\models\realesrgan-x4plus-anime.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="program\Real-ESRGAN\models\realesrgan-x4plus-anime.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="program\Real-ESRGAN\models\realesrgan-x4plus.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="program\Real-ESRGAN\models\realesrgan-x4plus.param">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="program\Real-ESRGAN\realesrgan-ncnn-vulkan.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="program\Real-ESRGAN\vcomp140.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="program\Real-ESRGAN\vcomp140d.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
