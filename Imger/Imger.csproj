@@ -2,12 +2,14 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFrameworks>net8.0-windows;net9.0-windows</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <NuGetAudit>False</NuGetAudit>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+	<!--<PublishAot>true</PublishAot>
+	<PublishTrimmed>false</PublishTrimmed>-->
     <Title>Imger</Title>
     <Authors>Tsing Yi Studio</Authors>
   </PropertyGroup>
