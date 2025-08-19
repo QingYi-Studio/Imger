@@ -6,8 +6,8 @@
     xmlns:local="clr-namespace:Imger.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="Imger - Preview rendering"
-    Width="1000"
-    Height="700"
+    Width="800"
+    Height="500"
     SnapsToDevicePixels="True"
     UseLayoutRounding="True"
     mc:Ignorable="d">

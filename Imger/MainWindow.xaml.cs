@@ -1,5 +1,6 @@
-﻿using Imger.Windows;
-using Imger.Pages.OptimizationControlPanel;
+﻿using Imger.Pages.OptimizationControlPanel;
+using Imger.Utils;
+using Imger.Windows;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,12 +21,24 @@ namespace Imger
         private RealESRGANPage? realESRGANPage;
         private string? renderingImagePath;
 
+        private static readonly HashSet<string> ValidExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".jpg",".jpeg",".jpe",".jfif",".jif",
+            ".png",".gif",".tif",".tiff",
+            ".bmp",".dib",".webp",".ico"
+        };
+
         public MainWindow()
         {
             InitializeComponent();
-
+            DataContext = this;
             UiInit();
         }
+
+        public ICommand ClearImage => new RelayCommand(o =>
+        {
+            PreviewRendering.Source = null;
+        });
 
         private void UiInit()
         {
@@ -38,19 +51,16 @@ namespace Imger
         {
             switch (mode)
             {
+                case "default":
+                    mainOptimizationControlPanelPage ??= new MainOcpPage();
+                    OptimizationControlPanelFrame.Navigate(mainOptimizationControlPanelPage);
+                    break;
                 case "real-esrgan":
-                    realESRGANPage = new RealESRGANPage();
+                    realESRGANPage ??= new RealESRGANPage();
                     OptimizationControlPanelFrame.Navigate(realESRGANPage);
                     break;
             }
         }
-
-        private static readonly HashSet<string> ValidExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ".jpg",".jpeg",".jpe",".jfif",".jif",
-            ".png",".gif",".tif",".tiff",
-            ".bmp",".dib",".webp",".ico"
-        };
 
         private void DropZone_PreviewDragOver(object sender, DragEventArgs e)
         {
@@ -71,16 +81,14 @@ namespace Imger
         {
             if (!e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                MessageBox.Show("Dropped content is not a file",
-                    "Invalid Content", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Dropped content is not a file", "Invalid Content", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             var files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (files == null || files.Length == 0)
             {
-                MessageBox.Show("No files were dropped.", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("No files were dropped.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -94,9 +102,7 @@ namespace Imger
 
             if (string.IsNullOrEmpty(imagePath))
             {
-                MessageBox.Show("No valid image file found.\nSupported formats: " +
-                    "JPEG, PNG, GIF, TIFF, BMP, WEBP, ICO",
-                    "Invalid Format", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("No valid image file found.\nSupported formats: JPEG, PNG, GIF, TIFF, BMP, WEBP, ICO", "Invalid Format", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -119,8 +125,7 @@ namespace Imger
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading image:\n{ex.Message}",
-                    "Load Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error loading image:\n{ex.Message}", "Load Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
