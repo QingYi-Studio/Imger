@@ -97,6 +97,7 @@
             <RowDefinition Height="5*" />
         </Grid.RowDefinitions>
         <!--#endregion-->
+
         <Label
             Grid.Row="0"
             Grid.RowSpan="4"
@@ -104,21 +105,210 @@
             Grid.ColumnSpan="15"
             Content="Real-ESRGAN"
             FontFamily="MiSans Demibold"
-            FontSize="20"
+            FontSize="18"
             FontWeight="Bold" />
         <Label
             Grid.Row="4"
             Grid.RowSpan="3"
             Grid.Column="3"
-            Grid.ColumnSpan="7"
+            Grid.ColumnSpan="8"
             Content="Input path"
             FontFamily="MiSans Light"
             FontSize="14" />
         <TextBox
+            x:Name="InputPathTextBox"
             Grid.Row="4"
             Grid.RowSpan="3"
-            Grid.Column="10"
+            Grid.Column="11"
             Grid.ColumnSpan="20"
-            Margin="0,5,0,5" />
+            Margin="0,5,0,5"
+            FontFamily="MiSans ExtraLight"
+            MaxLines="1" />
+        <Button
+            x:Name="SelectInputPathBtn"
+            Grid.Row="4"
+            Grid.RowSpan="3"
+            Grid.Column="32"
+            Grid.ColumnSpan="4"
+            Margin="0,5,0,5"
+            Content="Select"
+            FontFamily="MiSans Normal"
+            FontSize="11" />
+        <Label
+            Grid.Row="7"
+            Grid.RowSpan="3"
+            Grid.Column="3"
+            Grid.ColumnSpan="8"
+            Content="Output path"
+            FontFamily="MiSans Light"
+            FontSize="14" />
+        <TextBox
+            x:Name="OutputPathTextBox"
+            Grid.Row="7"
+            Grid.RowSpan="3"
+            Grid.Column="11"
+            Grid.ColumnSpan="20"
+            Margin="0,5,0,5"
+            FontFamily="MiSans ExtraLight"
+            MaxLines="1" />
+        <Button
+            x:Name="SelectOutputPathBtn"
+            Grid.Row="7"
+            Grid.RowSpan="3"
+            Grid.Column="32"
+            Grid.ColumnSpan="4"
+            Margin="0,5,0,5"
+            Content="Select"
+            FontFamily="MiSans Normal"
+            FontSize="11" />
+        <Label
+            Grid.Row="10"
+            Grid.RowSpan="3"
+            Grid.Column="3"
+            Grid.ColumnSpan="8"
+            Content="Scale"
+            FontFamily="MiSans Light"
+            FontSize="14" />
+        <ComboBox
+            x:Name="ScaleCombobox"
+            Grid.Row="10"
+            Grid.RowSpan="3"
+            Grid.Column="11"
+            Grid.ColumnSpan="7"
+            Margin="0,5,0,2"
+            FontFamily="MiSans Light"
+            SelectedIndex="0">
+            <ComboBoxItem Content="4" FontFamily="MiSans ExtraLight" />
+            <ComboBoxItem Content="3" FontFamily="MiSans ExtraLight" />
+            <ComboBoxItem Content="2" FontFamily="MiSans ExtraLight" />
+        </ComboBox>
+        <Label
+            Grid.Row="10"
+            Grid.RowSpan="3"
+            Grid.Column="20"
+            Grid.ColumnSpan="6"
+            Content="Tile size"
+            FontFamily="MiSans Light"
+            FontSize="14" />
+        <TextBox
+            Grid.Row="10"
+            Grid.RowSpan="3"
+            Grid.Column="26"
+            Grid.ColumnSpan="10"
+            Margin="0,5,0,5"
+            MaxLength="3"
+            MaxLines="1"
+            Text="0"
+            ToolTip="≥32. 0 indicates automatic." />
+        <Label
+            Grid.Row="13"
+            Grid.RowSpan="3"
+            Grid.Column="3"
+            Grid.ColumnSpan="8"
+            Content="Model"
+            FontFamily="MiSans Light"
+            FontSize="14" />
+        <ComboBox
+            x:Name="ModelCombobox"
+            Grid.Row="13"
+            Grid.RowSpan="3"
+            Grid.Column="11"
+            Grid.ColumnSpan="25"
+            Margin="0,5,0,0"
+            FontFamily="MiSans Light"
+            SelectedIndex="0">
+            <ComboBoxItem Content="realesrgan-x4plus" FontFamily="MiSans ExtraLight" />
+            <ComboBoxItem Content="realesrgan-x4plus-anime" FontFamily="MiSans ExtraLight" />
+            <ComboBoxItem Content="realesr-animevideov3-x2" FontFamily="MiSans ExtraLight" />
+            <ComboBoxItem Content="realesr-animevideov3-x3" FontFamily="MiSans ExtraLight" />
+            <ComboBoxItem Content="realesr-animevideov3-x4" FontFamily="MiSans ExtraLight" />
+            <ComboBoxItem Content="realesr-general-x4v3" FontFamily="MiSans ExtraLight" />
+            <ComboBoxItem Content="realesr-general-wdn-x4v3" FontFamily="MiSans ExtraLight" />
+        </ComboBox>
+        <Label
+            Grid.Row="17"
+            Grid.RowSpan="3"
+            Grid.Column="3"
+            Grid.ColumnSpan="8"
+            Content="GPU"
+            FontFamily="MiSans Light"
+            FontSize="14" />
+        <ComboBox
+            x:Name="GPUCombobox"
+            Grid.Row="17"
+            Grid.RowSpan="3"
+            Grid.Column="11"
+            Grid.ColumnSpan="25"
+            Margin="0,3,0,2"
+            FontFamily="MiSans Light"
+            SelectedIndex="0" />
+        <Label
+            Grid.Row="20"
+            Grid.RowSpan="3"
+            Grid.Column="3"
+            Grid.ColumnSpan="8"
+            Content="Thread"
+            FontFamily="MiSans Light"
+            FontSize="14" />
+        <TextBox
+            Grid.Row="20"
+            Grid.RowSpan="3"
+            Grid.Column="11"
+            Grid.ColumnSpan="8"
+            Margin="0,5,0,5"
+            FontFamily="MiSans ExtraLight"
+            MaxLength="6"
+            MaxLines="1"
+            Text="1:2:2"
+            ToolTip="The format is Load: Process: Save. Can be 1:2,2,2:2 for multi-gpu." />
+        <CheckBox
+            Grid.Row="21"
+            Grid.RowSpan="2"
+            Grid.Column="20"
+            Grid.ColumnSpan="16"
+            Margin="5,0,0,0"
+            Content="TTA(Test-Time Augmentation)"
+            FontFamily="MiSans Light"
+            ToolTip="Test Time Augmentation (TTA) is a simple yet powerful technique &#10; to improve image segmentation results by applying multiple &#10; transformations to an input image during inference and combining &#10; the outputs. When paired with models like U-Net, it often boosts &#10; performance without retraining." />
+        <Label
+            Grid.Row="23"
+            Grid.RowSpan="3"
+            Grid.Column="3"
+            Grid.ColumnSpan="8"
+            Content="File format"
+            FontFamily="MiSans Light"
+            FontSize="14" />
+        <ComboBox
+            x:Name="FormatCombobox"
+            Grid.Row="23"
+            Grid.RowSpan="3"
+            Grid.Column="11"
+            Grid.ColumnSpan="8"
+            Margin="0,5,0,2"
+            FontFamily="MiSans Light"
+            SelectedIndex="0">
+            <ComboBoxItem Content="PNG" FontFamily="MiSans ExtraLight" />
+            <ComboBoxItem Content="JPG" FontFamily="MiSans ExtraLight" />
+            <ComboBoxItem Content="WebP" FontFamily="MiSans ExtraLight" />
+        </ComboBox>
+        <Button
+            x:Name="LaunchBtn"
+            Grid.Row="23"
+            Grid.RowSpan="3"
+            Grid.Column="28"
+            Grid.ColumnSpan="8"
+            Margin="0,5,0,5"
+            Content="Launch"
+            FontFamily="MiSans Medium"
+            FontSize="14"
+            FontWeight="Bold" />
+        <TextBox
+            x:Name="OutputTextBox"
+            Grid.Row="27"
+            Grid.RowSpan="12"
+            Grid.Column="3"
+            Grid.ColumnSpan="33"
+            FontFamily="MiSans ExtraLight"
+            IsReadOnly="True" />
     </Grid>
 </Page>

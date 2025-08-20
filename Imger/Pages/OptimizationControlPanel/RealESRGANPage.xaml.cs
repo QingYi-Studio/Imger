@@ -1,4 +1,10 @@
-﻿using System.Windows.Controls;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Management;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace Imger.Pages.OptimizationControlPanel
 {
@@ -29,6 +35,63 @@ namespace Imger.Pages.OptimizationControlPanel
         public RealESRGANPage()
         {
             InitializeComponent();
+            _ = LoadGPUListAsync();
+        }
+
+        // 需要跳过的GPU
+        private static readonly string[] SkipGPUs = { "Oray" };
+
+        private async Task LoadGPUListAsync()
+        {
+            try
+            {
+                GPUCombobox.Items.Add(new ComboBoxItem { Content = "Loading GPUs…" });
+                GPUCombobox.IsEnabled = false;
+
+                var gpuNames = await Task.Run(() =>
+                {
+                    var list = new List<string>();
+
+                    using var searcher = new ManagementObjectSearcher("SELECT Name FROM Win32_VideoController");
+
+                    foreach (var m in searcher.Get())
+                    {
+                        var name = m["Name"]?.ToString() ?? "Unknown GPU";
+
+                        // 只要包含数组里任意关键字就跳过
+                        if (SkipGPUs.Any(k => name.Contains(k, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            continue;
+                        }
+
+                        list.Add(name);
+                    }
+                    return list;
+                });
+
+                GPUCombobox.Items.Clear();
+
+                if (gpuNames.Count == 0)
+                {
+                    //GPUCombobox.Items.Add(new ComboBoxItem { Content = "No GPU found" });
+                    MessageBox.Show("No GPU found", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                else
+                {
+                    gpuNames.ForEach(n => GPUCombobox.Items.Add(new ComboBoxItem { Content = n }));
+                    GPUCombobox.Items.Add(new ComboBoxItem { Content = "Default (Multi-GPU)" });
+                }
+
+                GPUCombobox.IsEnabled = true;
+                GPUCombobox.SelectedIndex = 0;
+            }
+            catch
+            {
+                GPUCombobox.Items.Clear();
+                //GPUCombobox.Items.Add(new ComboBoxItem { Content = "Error loading GPUs" });
+                MessageBox.Show("Error loading GPUs", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                GPUCombobox.IsEnabled = true;
+            }
         }
     }
 }
