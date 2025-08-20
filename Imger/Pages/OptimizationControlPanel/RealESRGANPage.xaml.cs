@@ -36,6 +36,10 @@ namespace Imger.Pages.OptimizationControlPanel
         #endregion
 
         private FileFolderPickerWindow? _picker;
+
+        // 获取 MainWindow 的实例
+        private readonly MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
+
         public RealESRGANPage()
         {
             InitializeComponent();
@@ -98,16 +102,16 @@ namespace Imger.Pages.OptimizationControlPanel
             }
         }
 
-        private void SelectInputPathBtn_Click(object sender, RoutedEventArgs e) => InputPathTextBox.Text = Select();
-
-        private void SelectOutputPathBtn_Click(object sender, RoutedEventArgs e) => OutputPathTextBox.Text = Select();
-
-        private void BackButton_Click(object sender, RoutedEventArgs e)
+        private void SelectInputPathBtn_Click(object sender, RoutedEventArgs e)
         {
-            // 获取 MainWindow 的实例
-            var mainWindow = (MainWindow)Application.Current.MainWindow;
-            mainWindow.ChangeControlPanel("default");
+            InputPathTextBox.Text = Select(out bool isFile);
+            if (isFile)
+                mainWindow.RenderPicture(InputPathTextBox.Text);
         }
+
+        private void SelectOutputPathBtn_Click(object sender, RoutedEventArgs e) => OutputPathTextBox.Text = Select(out _);
+
+        private void BackButton_Click(object sender, RoutedEventArgs e) => mainWindow.ChangeControlPanel("default");
 
         private async void LaunchBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -124,8 +128,8 @@ namespace Imger.Pages.OptimizationControlPanel
                                            $"-j {CheckThread()} " +
                                            $"-f {GetFormat()} ";
 
+            /*
             string tcommand;
-
             if (TTAModeCheckBox.IsChecked == true)
             {
                 tcommand = precommand + "-x ";
@@ -134,10 +138,14 @@ namespace Imger.Pages.OptimizationControlPanel
             {
                 tcommand = precommand;
             }
+             */
 
-            precommand = null!;
+            string tcommand = TTAModeCheckBox.IsChecked == true ? precommand + "-x " : precommand;
 
             string command = tcommand + "-v";
+
+            tcommand = null!;
+            precommand = null!;
 #if DEBUG
             MessageBox.Show(command);
 #endif
@@ -146,6 +154,7 @@ namespace Imger.Pages.OptimizationControlPanel
                 // 清除之前的输出
                 OutputTextBox.Clear();
 
+                #region Process
                 // 创建进程启动信息
                 var processStartInfo = new ProcessStartInfo
                 {
@@ -205,6 +214,10 @@ namespace Imger.Pages.OptimizationControlPanel
                 {
                     OutputTextBox.AppendText($"\nProcess exited with code: {process.ExitCode}");
                 });
+                #endregion
+
+                if (File.Exists(OutputPathTextBox.Text))
+                    mainWindow.RenderPicture(OutputPathTextBox.Text);
             }
             catch (Exception ex)
             {
@@ -304,16 +317,16 @@ namespace Imger.Pages.OptimizationControlPanel
 
         private string GetGPUId()
         {
-            /* origin code
+            /*
             int index = GPUCombobox.SelectedIndex;
             string gpuName = GPUCombobox.Text;
-            if (gpuName != "Default (Multi-GPU)" || !GPUCombobox.IsEnabled)
+            if (gpuName == "Default (Multi-GPU)" || !GPUCombobox.IsEnabled)
             {
                 return "auto";
             }
             return index.ToString();
-             */
-            return GPUCombobox.Text != "Default (Multi-GPU)" || !GPUCombobox.IsEnabled ? "auto" : GPUCombobox.SelectedIndex.ToString();
+            */
+            return GPUCombobox.Text == "Default (Multi-GPU)" || !GPUCombobox.IsEnabled ? "auto" : GPUCombobox.SelectedIndex.ToString();
         }
 
         private string CheckThread()
@@ -371,7 +384,7 @@ namespace Imger.Pages.OptimizationControlPanel
             };
         }
 
-        private string Select()
+        private string Select(out bool isFile)
         {
             try
             {
@@ -379,15 +392,17 @@ namespace Imger.Pages.OptimizationControlPanel
                 if (_picker.ShowDialog() == true)
                 {
                     string path = _picker.SelectedPath!;
-                    //bool isFile = dlg.IsFile;
+                    isFile = _picker.IsFile;
                     return path;
                 }
+                isFile = false;
                 return "";
             }
             catch(Exception ex)
             {
                 MessageBox.Show(ex.Message, "Select error", MessageBoxButton.OK, MessageBoxImage.Error);
                 _picker!.Close();
+                isFile = false;
                 return "";
             }
             finally

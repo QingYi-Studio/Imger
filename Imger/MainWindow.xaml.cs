@@ -98,6 +98,11 @@ namespace Imger
                 return !string.IsNullOrEmpty(ext) && ValidExtensions.Contains(ext);
             });
 
+            RenderPicture(imagePath!);
+        }
+
+        public void RenderPicture(string imagePath)
+        {
             renderingImagePath = imagePath;
 
             if (string.IsNullOrEmpty(imagePath))
