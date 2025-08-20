@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Imger.Windows;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management;
@@ -32,6 +33,7 @@ namespace Imger.Pages.OptimizationControlPanel
          */
         #endregion
 
+        private FileFolderPickerWindow? _picker;
         public RealESRGANPage()
         {
             InitializeComponent();
@@ -39,7 +41,7 @@ namespace Imger.Pages.OptimizationControlPanel
         }
 
         // 需要跳过的GPU
-        private static readonly string[] SkipGPUs = { "Oray" };
+        private static readonly string[] SkipGPUs = ["Oray"];
 
         private async Task LoadGPUListAsync()
         {
@@ -91,6 +93,39 @@ namespace Imger.Pages.OptimizationControlPanel
                 //GPUCombobox.Items.Add(new ComboBoxItem { Content = "Error loading GPUs" });
                 MessageBox.Show("Error loading GPUs", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 GPUCombobox.IsEnabled = true;
+            }
+        }
+
+        private void SelectInputPathBtn_Click(object sender, RoutedEventArgs e) => InputPathTextBox.Text = Select();
+
+        private void SelectOutputPathBtn_Click(object sender, RoutedEventArgs e) => OutputPathTextBox.Text = Select();
+
+        private string Select()
+        {
+            try
+            {
+                _picker = new FileFolderPickerWindow();
+                if (_picker.ShowDialog() == true)
+                {
+                    string path = _picker.SelectedPath!;
+                    //bool isFile = dlg.IsFile;
+                    return path;
+                }
+                return "";
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Select error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _picker!.Close();
+                return "";
+            }
+            finally
+            {
+                _picker?.Close(); // 确保关闭
+                _picker = null;
+                // 强制垃圾回收，释放窗口资源
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
             }
         }
     }
