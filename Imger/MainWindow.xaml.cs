@@ -24,7 +24,7 @@ namespace Imger
         private static readonly HashSet<string> ValidExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
             ".jpg",".jpeg",".jpe",".jfif",".jif",
-            ".png",".gif",".tif",".tiff",
+            ".png",".tif",".tiff",
             ".bmp",".dib",".webp",".ico"
         };
 

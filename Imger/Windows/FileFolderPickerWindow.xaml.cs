@@ -157,7 +157,7 @@ namespace Imger.Windows
             }
             else
             {
-                MessageBox.Show("目录不存在或无法访问！", "跳转失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("The directory does not exist or cannot be accessed!", "Failed to navigate.", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

@@ -1,6 +1,8 @@
 ﻿using Imger.Windows;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Management;
 using System.Threading.Tasks;
@@ -77,28 +79,297 @@ namespace Imger.Pages.OptimizationControlPanel
                 {
                     //GPUCombobox.Items.Add(new ComboBoxItem { Content = "No GPU found" });
                     MessageBox.Show("No GPU found", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    GPUCombobox.IsEnabled = false;
                 }
                 else
                 {
                     gpuNames.ForEach(n => GPUCombobox.Items.Add(new ComboBoxItem { Content = n }));
                     GPUCombobox.Items.Add(new ComboBoxItem { Content = "Default (Multi-GPU)" });
+                    GPUCombobox.IsEnabled = true;
+                    GPUCombobox.SelectedIndex = 0;
                 }
-
-                GPUCombobox.IsEnabled = true;
-                GPUCombobox.SelectedIndex = 0;
             }
             catch
             {
                 GPUCombobox.Items.Clear();
                 //GPUCombobox.Items.Add(new ComboBoxItem { Content = "Error loading GPUs" });
                 MessageBox.Show("Error loading GPUs", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                GPUCombobox.IsEnabled = true;
+                GPUCombobox.IsEnabled = false;
             }
         }
 
         private void SelectInputPathBtn_Click(object sender, RoutedEventArgs e) => InputPathTextBox.Text = Select();
 
         private void SelectOutputPathBtn_Click(object sender, RoutedEventArgs e) => OutputPathTextBox.Text = Select();
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            // 获取 MainWindow 的实例
+            var mainWindow = (MainWindow)Application.Current.MainWindow;
+            mainWindow.ChangeControlPanel("default");
+        }
+
+        private async void LaunchBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (CheckPath() == false)
+                return;
+
+            string precommand = "cd ./program/Real-ESRGAN/ && " +
+                $"realesrgan-ncnn-vulkan.exe -i {InputPathTextBox.Text} " +
+                                           $"-o {OutputPathTextBox.Text} " +
+                                           $"-s {ScaleCombobox.Text} " +
+                                           $"-t {GetTileSize()} " +
+                                           $"-n {ModelCombobox.Text} " +
+                                           $"-g {GetGPUId()} " +
+                                           $"-j {CheckThread()} " +
+                                           $"-f {GetFormat()} ";
+
+            string tcommand;
+
+            if (TTAModeCheckBox.IsChecked == true)
+            {
+                tcommand = precommand + "-x ";
+            }
+            else
+            {
+                tcommand = precommand;
+            }
+
+            precommand = null!;
+
+            string command = tcommand + "-v";
+#if DEBUG
+            MessageBox.Show(command);
+#endif
+            try
+            {
+                // 清除之前的输出
+                OutputTextBox.Clear();
+
+                // 创建进程启动信息
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c {command}",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WorkingDirectory =  Environment.CurrentDirectory
+                };
+
+                // 创建进程
+                using var process = new Process();
+                process.StartInfo = processStartInfo;
+
+                // 设置输出数据接收处理程序
+                process.OutputDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        // 在UI线程上更新TextBox
+                        Dispatcher.Invoke(() =>
+                        {
+                            OutputTextBox.AppendText(e.Data + Environment.NewLine);
+                            OutputTextBox.ScrollToEnd();
+                        });
+                    }
+                };
+
+                // 设置错误数据接收处理程序
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        // 在UI线程上更新TextBox
+                        Dispatcher.Invoke(() =>
+                        {
+                            OutputTextBox.AppendText(e.Data + Environment.NewLine);
+                            OutputTextBox.ScrollToEnd();
+                        });
+                    }
+                };
+
+                // 启动进程
+                process.Start();
+
+                // 开始异步读取输出
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                // 等待进程退出
+                await Task.Run(() => process.WaitForExit());
+
+                // 显示退出代码
+                Dispatcher.Invoke(() =>
+                {
+                    OutputTextBox.AppendText($"\nProcess exited with code: {process.ExitCode}");
+                });
+            }
+            catch (Exception ex)
+            {
+                // 显示错误信息
+                Dispatcher.Invoke(() =>
+                {
+                    OutputTextBox.AppendText($"Error executing command: {ex.Message}");
+                });
+            }
+        }
+
+        private bool CheckPath()
+        {
+            // 创建错误消息列表
+            List<string> errors = [];
+
+            // 同时检查输入路径
+            if (string.IsNullOrWhiteSpace(InputPathTextBox.Text))
+            {
+                errors.Add("The input path cannot be empty.");
+            }
+            else
+            {
+                // 检查输入路径是否存在（可以是文件或目录）
+                bool inputPathExists = File.Exists(InputPathTextBox.Text) ||
+                                      Directory.Exists(InputPathTextBox.Text);
+
+                if (!inputPathExists)
+                {
+                    errors.Add("The input path does not exist or cannot be accessed!");
+                }
+            }
+
+            // 同时检查输出路径
+            if (string.IsNullOrWhiteSpace(OutputPathTextBox.Text))
+            {
+                errors.Add("The output path cannot be empty.");
+            }
+            else
+            {
+                // 对于输出路径，如果指定的是文件，检查其目录是否存在
+                // 如果指定的是目录，检查目录是否存在
+                bool outputPathValid = false;
+
+                try
+                {
+                    // 检查是否是文件路径（包含扩展名）
+                    if (Path.HasExtension(OutputPathTextBox.Text))
+                    {
+                        // 如果是文件路径，检查其目录是否存在
+                        string outputDirectory = Path.GetDirectoryName(OutputPathTextBox.Text)!;
+                        outputPathValid = Directory.Exists(outputDirectory);
+
+                        if (!outputPathValid)
+                        {
+                            errors.Add("The output directory for the specified file does not exist!");
+                        }
+                    }
+                    else
+                    {
+                        // 如果是目录路径，检查目录是否存在
+                        outputPathValid = Directory.Exists(OutputPathTextBox.Text);
+
+                        if (!outputPathValid)
+                        {
+                            errors.Add("The output directory does not exist!");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Invalid output path format: {ex.Message}");
+                }
+            }
+
+            // 如果有错误，一次性显示所有错误
+            if (errors.Count > 0)
+            {
+                string errorMessage = string.Join("\n\n", errors);
+                MessageBox.Show(errorMessage, "Path Validation Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+
+            return true;
+        }
+
+        private string GetTileSize()
+        {
+            Int128 iTileSize = Int128.Parse(TileSizeTextBox.Text);
+            if (iTileSize < 32 && iTileSize != 0 || iTileSize < 0)
+            {
+                MessageBox.Show("The tile size needs to be larger than 32.\nThis time, automatic configuration will be used.", "Tile size too small", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return "0";
+            }
+            return iTileSize.ToString();
+        }
+
+        private string GetGPUId()
+        {
+            /* origin code
+            int index = GPUCombobox.SelectedIndex;
+            string gpuName = GPUCombobox.Text;
+            if (gpuName != "Default (Multi-GPU)" || !GPUCombobox.IsEnabled)
+            {
+                return "auto";
+            }
+            return index.ToString();
+             */
+            return GPUCombobox.Text != "Default (Multi-GPU)" || !GPUCombobox.IsEnabled ? "auto" : GPUCombobox.SelectedIndex.ToString();
+        }
+
+        private string CheckThread()
+        {
+            string input = ThreadTextBox.Text;
+            string defaultValue = "1:2:2";
+
+            // 检查空值
+            if (string.IsNullOrWhiteSpace(input))
+                return defaultValue;
+
+            // 检查是否包含冒号
+            if (input.Contains(':'))
+            {
+                // 分割字符串
+                string[] parts = input.Split(':');
+
+                // 检查是否有且只有三个部分
+                if (parts.Length != 3)
+                    return defaultValue;
+
+                // 检查每个部分
+                foreach (string part in parts)
+                {
+                    // 检查长度是否为1
+                    if (part.Length != 1)
+                        return defaultValue;
+
+                    // 检查是否为数字1-9
+                    if (!char.IsDigit(part[0]) || part[0] == '0')
+                        return defaultValue;
+                }
+
+                return input; // 格式正确，返回原字符串
+            }
+            else
+            {
+                // 检查是否为单个数字1-9
+                if (input.Length == 1 && char.IsDigit(input[0]) && input[0] != '0')
+                    return input; // 格式正确，返回原字符串
+                else
+                    return defaultValue; // 格式不正确，返回默认值
+            }
+        }
+
+        private string GetFormat()
+        {
+            int index = FormatCombobox.SelectedIndex;
+            return index switch
+            {
+                0 => "png",
+                1 => "jpg",
+                2 => "webp",
+                _ => "png",
+            };
+        }
 
         private string Select()
         {

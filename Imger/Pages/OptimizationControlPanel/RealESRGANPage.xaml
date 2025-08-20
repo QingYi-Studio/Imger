@@ -107,6 +107,49 @@
             FontFamily="MiSans Demibold"
             FontSize="18"
             FontWeight="Bold" />
+        <Button
+            x:Name="BackButton"
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            Grid.Column="30"
+            Grid.ColumnSpan="7"
+            Margin="0,7,0,0"
+            Click="BackButton_Click"
+            Content="Back"
+            Cursor="Hand"
+            FontFamily="MiSans"
+            FontSize="14"
+            Foreground="White">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="Background" Value="#FF0078D7" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <Border
+                                    x:Name="border"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="4">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#FF0066B4" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="#FF005A9E" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
         <Label
             Grid.Row="4"
             Grid.RowSpan="3"
@@ -193,6 +236,7 @@
             FontFamily="MiSans Light"
             FontSize="14" />
         <TextBox
+            x:Name="TileSizeTextBox"
             Grid.Row="10"
             Grid.RowSpan="3"
             Grid.Column="26"
@@ -253,6 +297,7 @@
             FontFamily="MiSans Light"
             FontSize="14" />
         <TextBox
+            x:Name="ThreadTextBox"
             Grid.Row="20"
             Grid.RowSpan="3"
             Grid.Column="11"
@@ -264,6 +309,7 @@
             Text="1:2:2"
             ToolTip="The format is Load: Process: Save. Can be 1:2,2,2:2 for multi-gpu." />
         <CheckBox
+            x:Name="TTAModeCheckBox"
             Grid.Row="21"
             Grid.RowSpan="2"
             Grid.Column="20"
@@ -300,6 +346,7 @@
             Grid.Column="28"
             Grid.ColumnSpan="8"
             Margin="0,5,0,0"
+            Click="LaunchBtn_Click"
             Content="Launch"
             FontFamily="MiSans Medium"
             FontSize="14"
@@ -311,6 +358,168 @@
             Grid.Column="3"
             Grid.ColumnSpan="33"
             FontFamily="MiSans ExtraLight"
-            IsReadOnly="True" />
+            FontSize="10"
+            HorizontalScrollBarVisibility="Visible"
+            IsReadOnly="True"
+            VerticalScrollBarVisibility="Visible">
+
+            <TextBox.Resources>
+                <!--  垂直滚动条样式  -->
+                <Style x:Key="VerticalScrollBarStyle" TargetType="{x:Type ScrollBar}">
+                    <Setter Property="Width" Value="8" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Opacity" Value="0.3" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ScrollBar}">
+                                <Grid>
+                                    <Border Background="{TemplateBinding Background}" />
+                                    <Track x:Name="PART_Track" IsDirectionReversed="true">
+                                        <Track.Thumb>
+                                            <Thumb>
+                                                <Thumb.Template>
+                                                    <ControlTemplate TargetType="{x:Type Thumb}">
+                                                        <Rectangle
+                                                            Fill="#FFADADAD"
+                                                            RadiusX="4"
+                                                            RadiusY="4" />
+                                                    </ControlTemplate>
+                                                </Thumb.Template>
+                                                <Thumb.Style>
+                                                    <Style TargetType="{x:Type Thumb}">
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Opacity" Value="1" />
+                                                            </Trigger>
+                                                            <Trigger Property="IsDragging" Value="True">
+                                                                <Setter Property="Opacity" Value="1" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Thumb.Style>
+                                            </Thumb>
+                                        </Track.Thumb>
+                                    </Track>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" Value="1" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+
+                <!--  水平滚动条样式  -->
+                <Style x:Key="HorizontalScrollBarStyle" TargetType="{x:Type ScrollBar}">
+                    <Setter Property="Height" Value="8" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Opacity" Value="0.3" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type ScrollBar}">
+                                <Grid>
+                                    <Border Background="{TemplateBinding Background}" />
+                                    <Track x:Name="PART_Track">
+                                        <Track.Thumb>
+                                            <Thumb>
+                                                <Thumb.Template>
+                                                    <ControlTemplate TargetType="{x:Type Thumb}">
+                                                        <Rectangle
+                                                            Fill="#FFADADAD"
+                                                            RadiusX="4"
+                                                            RadiusY="4" />
+                                                    </ControlTemplate>
+                                                </Thumb.Template>
+                                                <Thumb.Style>
+                                                    <Style TargetType="{x:Type Thumb}">
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Opacity" Value="1" />
+                                                            </Trigger>
+                                                            <Trigger Property="IsDragging" Value="True">
+                                                                <Setter Property="Opacity" Value="1" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Thumb.Style>
+                                            </Thumb>
+                                        </Track.Thumb>
+                                    </Track>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" Value="1" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+
+                <!--  正确的 ScrollViewer 模板  -->
+                <ControlTemplate x:Key="ScrollViewerControlTemplate" TargetType="{x:Type ScrollViewer}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <ScrollContentPresenter Grid.Row="0" Grid.Column="0" />
+
+                        <!--  垂直滚动条  -->
+                        <ScrollBar
+                            x:Name="PART_VerticalScrollBar"
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Maximum="{TemplateBinding ScrollableHeight}"
+                            Orientation="Vertical"
+                            Style="{StaticResource VerticalScrollBarStyle}"
+                            ViewportSize="{TemplateBinding ViewportHeight}"
+                            Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
+                            Value="{TemplateBinding VerticalOffset}" />
+
+                        <!--  水平滚动条  -->
+                        <ScrollBar
+                            x:Name="PART_HorizontalScrollBar"
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Maximum="{TemplateBinding ScrollableWidth}"
+                            Orientation="Horizontal"
+                            Style="{StaticResource HorizontalScrollBarStyle}"
+                            ViewportSize="{TemplateBinding ViewportWidth}"
+                            Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
+                            Value="{TemplateBinding HorizontalOffset}" />
+
+                        <!--  右下角的小方块  -->
+                        <!--<Rectangle
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Fill="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />-->
+                    </Grid>
+                </ControlTemplate>
+
+                <!--  TextBox 的模板，使用自定义的 ScrollViewer  -->
+                <Style TargetType="{x:Type TextBox}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type TextBox}">
+                                <Border
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                    <ScrollViewer x:Name="PART_ContentHost" Template="{StaticResource ScrollViewerControlTemplate}" />
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TextBox.Resources>
+        </TextBox>
     </Grid>
 </Page>
