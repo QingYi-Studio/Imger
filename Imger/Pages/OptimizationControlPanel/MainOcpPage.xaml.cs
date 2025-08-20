@@ -1,17 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Imger.Pages.OptimizationControlPanel
 {
@@ -20,9 +8,17 @@ namespace Imger.Pages.OptimizationControlPanel
     /// </summary>
     public partial class MainOcpPage : Page
     {
+        // 获取 MainWindow 的实例
+        private readonly MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
+
         public MainOcpPage()
         {
             InitializeComponent();
+        }
+
+        private void RealESRGANBtn_Click(object sender, RoutedEventArgs e)
+        {
+            mainWindow.ChangeControlPanel("real-esrgan");
         }
     }
 }
